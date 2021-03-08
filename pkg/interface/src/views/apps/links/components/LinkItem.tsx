@@ -29,6 +29,7 @@ export const LinkItem = (props: LinkItemProps): ReactElement => {
     group,
     path,
     contacts,
+    pending,
     ...rest
   } = props;
 
@@ -93,7 +94,14 @@ export const LinkItem = (props: LinkItemProps): ReactElement => {
   const isUnread = props.unreads.graph?.[appPath]?.['/']?.unreads?.has(node.post.index);
 
   return (
-    <Box mx="auto" px={3} maxWidth="768px" ref={ref} width="100%" {...rest}>
+    <Box
+      mx="auto"
+      px={3}
+      maxWidth="768px"
+      ref={ref}
+      width="100%" 
+      opacity={pending ? '0.5' : '1'}
+      {...rest}>
       <Box
         lineHeight="tall"
         display='flex'
@@ -155,7 +163,9 @@ export const LinkItem = (props: LinkItemProps): ReactElement => {
       ></Author>
 
       <Box ml="auto">
-        <Link to={`${baseUrl}/${index}`}>
+        <Link
+          to={pending ? '#' : `${baseUrl}/${index}`}
+          style={ { cursor: pending ? 'default' : 'pointer' } }>
         <Box display='flex'>
           <Icon color={commColor} icon='Chat' />
           <Text color={commColor} ml={1}>{node.children.size}</Text>

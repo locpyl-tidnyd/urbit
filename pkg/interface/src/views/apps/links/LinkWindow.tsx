@@ -60,6 +60,7 @@ export class LinkWindow extends Component<LinkWindowProps, {}> {
     }
     const linkProps = {
       ...props,
+      pending: post.pending,
       node,
     };
     if (this.canWrite() && index.eq(first ?? bigInt.zero)) {
