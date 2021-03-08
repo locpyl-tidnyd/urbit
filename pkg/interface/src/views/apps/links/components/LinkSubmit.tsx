@@ -40,12 +40,7 @@ const LinkSubmit = (props: LinkSubmitProps) => {
       `~${props.ship}`,
       props.name,
       post
-    ).then(() => {
-      setDisabled(false);
-      setLinkValue('');
-      setLinkTitle('');
-      setLinkValid(false);
-    });
+    );
   };
 
   const validateLink = (link) => {
