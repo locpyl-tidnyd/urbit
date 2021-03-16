@@ -119,14 +119,20 @@ deriveNoun ''BehnEf
 data Blit
     = Bel ()
     | Clr ()
-    | Hop Word64
+    | Hop HopTarget
     | Klr Stub
-    | Lin [Char]
-    | Mor ()
+    | Put [Char]
+    | Nel ()
     | Sag Path Noun
     | Sav Path Atom
     | Url Cord
+    | Wyp ()
   deriving (Eq, Ord)
+
+data HopTarget
+    = Col Word64
+    | Roc Word64 Word64 -- row, col
+  deriving (Eq, Ord, Show)
 
 data Deco
     = DecoBl
@@ -205,18 +211,40 @@ instance FromNoun Tint where
                 "w" -> pure TintW
                 t   -> fail ("invalid: " <> unpack t)
 
+instance FromNoun Blit where
+  parseNoun a@(Atom _) = do fail ("invalid blit: " <> show a)
+  parseNoun b@(Cell t n) = do
+    parseNoun @Cord t <&> unCord >>= \case
+      "Hop" -> case n of
+                Atom c -> do
+                  col <- parseNoun n
+                  pure $ Hop $ Col col
+                Cell (Atom r) (Atom c) -> do
+                  (row, col) <- parseNoun n
+                  pure $ Hop $ Roc row col
+                _ -> fail ("invalid hop: " <> show n)
+      _     -> parseNoun b
+
+instance ToNoun Blit where
+  toNoun = \case
+    Hop t   -> Cell (toNoun $ Cord "hop") $ case t of
+                 Col c   -> toNoun c
+                 Roc r c -> toNoun (r, c)
+    b -> toNoun b
+
 -- Manual instance to not save the noun/atom in Sag/Sav, because these can be
 -- megabytes and makes king hang.
 instance Show Blit where
   show (Bel ())     = "Bel ()"
   show (Clr ())     = "Clr ()"
-  show (Hop x)      = "Hop " ++ (show x)
+  show (Hop t)      = "Hop " ++ (show t)
   show (Klr s)      = "Klr " ++ (show s)
-  show (Lin c)      = "Lin " ++ (show c)
-  show (Mor ())     = "Mor ()"
+  show (Put c)      = "Put " ++ (show c)
+  show (Nel ())     = "Nel ()"
   show (Sag path _) = "Sag " ++ (show path)
   show (Sav path _) = "Sav " ++ (show path)
   show (Url c)      = "Url " ++ (show c)
+  show (Wyp ())     = "Wyp ()"
 
 {-|
     %blip -- TODO
@@ -233,7 +261,6 @@ data TermEf
 
 deriveNoun ''Stye
 deriveNoun ''Stub
-deriveNoun ''Blit
 deriveNoun ''TermEf
 
 

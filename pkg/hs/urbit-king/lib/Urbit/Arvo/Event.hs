@@ -283,12 +283,53 @@ data ArrowKey = D | L | R | U
 data Belt
     = Aro ArrowKey
     | Bac ()
-    | Ctl Cord
     | Del ()
-    | Met Cord
+    | Hit Word64 Word64
+    | Key Modifier Bolt
     | Ret ()
     | Txt Tour
   deriving (Eq, Ord, Show)
+
+data Bolt  --TODO  dedupe with Belt
+    = Single Cord --TODO  Char?
+    | Special Belt  --TODO  exclude Key and Txt
+  deriving (Eq, Ord, Show)
+
+data Modifier = Non | Ctl | Met | Hyp
+  deriving (Eq, Ord, Show)
+
+instance FromNoun Belt where
+  parseNoun a@(Atom _) = do fail ("invalid belt: " <> show a)
+  parseNoun b@(Cell t n) = do
+    parseNoun @Cord t <&> unCord >>= \case
+      "Key" -> case n of
+                Cell m k@(Atom _) -> do
+                  mod <- parseMod m
+                  key <- parseNoun k
+                  pure $ Key mod key
+                Cell m b -> do
+                  mod <- parseMod m
+                  key <- case b of
+                           (Atom c) -> pure $ Single $ parseNoun @Cord c
+                           b@(Cell _ _) -> pure $ Special $ parseNoun b
+                  pure $ Key mod key
+                _ -> fail ("invalid hop: " <> show n)
+      _     -> parseNoun b
+    where
+      parseMod m = parseNoun @Cord m <&> unCord >>= \case
+                     ""    -> pure Non
+                     "ctl" -> pure Ctl
+                     "met" -> pure Met
+                     "hyp" -> pure Hyp
+                     _     -> fail ("invalid mod: " <> unpack m)
+
+instance ToNoun Belt where
+  toNoun = \case
+    Key m k ->
+      Cell (toNoun $ Cord "key") $ case k of
+        Single c  -> toNoun c
+        Special b -> toNoun b
+    b -> toNoun b
 
 data TermEv
     = TermEvBelt (UD, ()) Belt
@@ -300,7 +341,6 @@ data TermEv
 
 deriveNoun ''LegacyBootEvent
 deriveNoun ''ArrowKey
-deriveNoun ''Belt
 deriveNoun ''TermEv
 
 
