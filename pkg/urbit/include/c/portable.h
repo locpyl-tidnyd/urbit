@@ -23,6 +23,7 @@
 #     ifndef _XOPEN_SOURCE
 #     define _XOPEN_SOURCE 700
 #     endif
+#     include <openssl/opensslv.h>
 #     include <inttypes.h>
 #     include <stdlib.h>
 #     include <string.h>
@@ -39,6 +40,7 @@
 #     include <sys/mman.h>
 
 #   elif defined(U3_OS_osx)
+#     include <openssl/opensslv.h>
 #     include <inttypes.h>
 #     include <stdlib.h>
 #     include <string.h>
@@ -57,6 +59,7 @@
 #     include <sys/mman.h>
 
 #   elif defined(U3_OS_bsd)
+#     include <openssl/opensslv.h>
 #     include <inttypes.h>
 #     include <stdlib.h>
 #     include <string.h>
