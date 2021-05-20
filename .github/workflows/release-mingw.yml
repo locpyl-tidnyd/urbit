@@ -26,19 +26,11 @@ jobs:
 
       - run: make build/urbit build/urbit-worker
       - run: build/urbit -l -d -B ../../bin/solid.pill -F bus && curl -f --data '{"source":{"dojo":"+hood/exit"},"sink":{"app":"hood"}}' http://localhost:12321
-      - uses: actions/upload-artifact@v2
-        with:
-          name: mingw-build
-          path: ./pkg/urbit/build/*.exe
-          if-no-files-found: error
-
-  release:
-    runs-on: ubuntu-latest
-    needs: mingw
-    steps:
+      - run: 7z a build/urbit.zip ./build/*.exe
+      
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: mingw-build
+          artifacts: pkg/urbit/build/urbit.zip
           commit: mingw-port-release
           tag: ${{ github.event.inputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
